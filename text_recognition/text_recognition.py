@@ -106,7 +106,7 @@ class Text_Recognition():
     # predict
     def predict(self, img_name_origin, image):
         # 여기서 이미지 받음
-        print('predict called')
+        # print('predict called')
         demo_data = RawDataset(root=image,
                                opt=self.opt)  # use RawDataset
         demo_loader = torch.utils.data.DataLoader(
@@ -142,31 +142,34 @@ class Text_Recognition():
                     preds_str = self.converter.decode(
                         preds_index, length_for_pred)
 
-                log = open(f'./log_demo_result.txt', 'a')
+                # log = open(f'./log_demo_result.txt', 'a')
                 dashed_line = '-' * 80
                 head = f'{"image_path":25s}\t{"predicted_labels":25s}\tconfidence score'
 
                 print(f'{dashed_line}\n{head}\n{dashed_line}')
-                log.write(f'{dashed_line}\n{head}\n{dashed_line}\n')
+                # log.write(f'{dashed_line}\n{head}\n{dashed_line}\n')
 
                 preds_prob = F.softmax(preds, dim=2)
                 preds_max_prob, _ = preds_prob.max(dim=2)
+                pred_result = []
+                confidence_score_result = []
                 for img_name, pred, pred_max_prob in zip(image_path_list, preds_str, preds_max_prob):
                     if 'Attn' in self.opt.Prediction:
                         pred_EOS = pred.find('[s]')
                         # prune after "end of sentence" token ([s])
                         pred = pred[:pred_EOS]
                         pred_max_prob = pred_max_prob[:pred_EOS]
+                        pred_result.append(pred)
 
                     # calculate confidence score (= multiply of pred_max_prob)
                     try:
                         confidence_score = pred_max_prob.cumprod(dim=0)[-1]
                     except:
                         confidence_score = 0
-                    print(img_name_origin, pred)
+                    confidence_score_result.append(confidence_score)
                     print(
                         f'{img_name_origin:25s}\t{pred:25s}\t{confidence_score:0.4f}')
-                    log.write(
-                        f'{img_name_origin:25s}\t{pred:25s}\t{confidence_score:0.4f}\n')
-                log.close()
-                return pred, confidence_score
+                #     log.write(
+                #         f'{img_name_origin:25s}\t{pred:25s}\t{confidence_score:0.4f}\n')
+                # log.close()
+                return pred_result, confidence_score_result

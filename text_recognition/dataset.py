@@ -237,7 +237,7 @@ class RawDataset(Dataset):
         #             self.image_path_list.append(os.path.join(dirpath, name))
         self.image_path_list = root
 
-        self.image_path_list = natsorted(self.image_path_list)
+        # self.image_path_list = natsorted(self.image_path_list)
         self.nSamples = len(self.image_path_list)
 
     def __len__(self):

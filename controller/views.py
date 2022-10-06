@@ -13,6 +13,7 @@ import numpy as np
 from PIL import Image
 
 from ai.settings import BASE_DIR
+from utils.logging_time import logging_time
 from .apps import ControllerConfig
 from .models import Requested, Responsed
 from .serializers import RequestedSerializer, ResponsedSerializer
@@ -22,6 +23,7 @@ class GetInformation(APIView):
     permission_classes = [AllowAny]
     serializer_class = RequestedSerializer
 
+    @logging_time
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)  # data 유효한지 확인
         if serializer.is_valid():
@@ -31,8 +33,9 @@ class GetInformation(APIView):
                             image=image
                             )
             file_name, file_ext = os.path.splitext(image.name)
-            sliced_img_names = []
+            coordinates = []
             sliced_img_list = {}
+            pred_img = []
             # req.save()
 
             # Super Resolution 초해상화
@@ -59,26 +62,23 @@ class GetInformation(APIView):
                 d2 = list(map(int, l['points'][2]))
                 try:
                     sliced_img = img[d1[1]:d2[1], d1[0]:d2[0]]  # 높이, 너비
-                    sliced_img_name = img_info['identifier'] + \
-                        f'_{i}.' + img_info['type']
+                    # sliced_img_name = img_info['identifier'] + \
+                    #     f'_{i}.' + img_info['type']
 
-                    sliced_img_list[sliced_img_name] = [
-                        sliced_img, l['points']]
-                    sliced_img_names.append(sliced_img_name)
-                    # 저장 안하고, 바로 text recognition으로 보내기
+                    coordinates.append(l['points'])
+                    # ndarray -> 이미지로 다시 전환해서 바로 보내기. (서버에 나눈 이미지 저장 후 불러오는게 X)
+                    pred_img.append(Image.fromarray(sliced_img))
                     # cv2.imwrite(os.path.join(BASE_DIR, 'static',
                     #             'images', image, sliced_img_name), sliced_img)
                 except:
                     pass
 
-            # # Text Recognition
-            result = [{'name': file_name + file_ext, 'result': []}]
-            for k in sliced_img_names:
-                # ndarray -> 이미지로 다시 전환해서 바로 보내기. (서버에 나눈 이미지 저장 후 불러오는게 X)
-                pred, confidence_score = ControllerConfig.tr.predict(
-                    k, image=[Image.fromarray(sliced_img_list[k][0])])
-                result[0]['result'].append(
-                    [pred, confidence_score, sliced_img_list[k][1]])
+            # Text Recognition
+            # 저장 안하고, 바로 text recognition으로 보내기
+            result = [{'name': file_name + file_ext,
+                       'coordinates': coordinates, 'result': []}]
+            result[0]['result'] = ControllerConfig.tr.predict(
+                file_name, pred_img)
 
             res = Responsed(user=user, result=result)
             # res = Responsed(user=user, result=json.dumps(result))
