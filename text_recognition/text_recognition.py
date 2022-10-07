@@ -30,7 +30,7 @@ class Text_Recognition():
                             help='path to image_folder which contains text images')
         parser.add_argument('--workers', type=int,
                             help='number of data loading workers', default=4)
-        parser.add_argument('--batch_size', type=int, default=32,
+        parser.add_argument('--batch_size', type=int, default=500,  # training은 안되는데, predict는 가능. training때 32헀음
                             help='input batch size')  # 192
         parser.add_argument('--saved_model', default=saved_model,  # required=True,
                             help="path to saved_model to evaluation")

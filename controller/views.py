@@ -72,7 +72,7 @@ class GetInformation(APIView):
                 except:
                     pass
 
-            # Text Recognition
+            # Text Recognition : 최대 predict 이미지 개수 500개
             result = [{'name': file_name + file_ext,
                        'coordinates': coordinates, 'result': []}]
             result[0]['result'] = ControllerConfig.tr.predict(
@@ -87,14 +87,14 @@ class GetInformation(APIView):
                 center = [(points[3][0] + points[0][0]) // 2,
                           (points[3][1] + points[0][1]) // 2]
                 m = points[3][0] - center[0]
-                cv2.polylines(img, [points], True,
+                cv2.rectangle(img, points[0], points[3],
                               (255, 0, 255), 2, cv2.LINE_AA)
                 b, g, r, a = 100, 100, 250, 0
                 fontpath = "fonts/gulim.ttc"
                 font = ImageFont.truetype(fontpath, 60)
                 img_pil = Image.fromarray(img)
                 draw = ImageDraw.Draw(img_pil)
-                draw.text((center[0] + m * 2, center[1]),
+                draw.text((center[0] + m * 2, center[1] - m),
                           txt, font=font, fill=(b, g, r, a))
                 img = np.array(img_pil)
 
