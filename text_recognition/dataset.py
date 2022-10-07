@@ -235,6 +235,8 @@ class RawDataset(Dataset):
         #         ext = ext.lower()
         #         if ext == '.jpg' or ext == '.jpeg' or ext == '.png':
         #             self.image_path_list.append(os.path.join(dirpath, name))
+
+        # cho2:
         self.image_path_list = root
 
         # self.image_path_list = natsorted(self.image_path_list)
@@ -245,7 +247,7 @@ class RawDataset(Dataset):
 
     def __getitem__(self, index):
 
-        # 원래 여기서 이미지 여는 건데, 난 연거 보낸거라 converting만
+        # cho2: 원래 여기서 이미지 여는 건데, 난 연거 보낸거라 converting만
         try:
             if self.opt.rgb:
                 # img = Image.open(self.image_path_list[index]).convert(

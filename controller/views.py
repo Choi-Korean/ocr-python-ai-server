@@ -1,7 +1,6 @@
 import json
 import os
-from django.http import JsonResponse
-from django.shortcuts import render
+# from django.shortcuts import render
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -25,7 +24,7 @@ class GetInformation(APIView):
 
     @logging_time
     def post(self, request, format=None):
-        serializer = self.serializer_class(data=request.data)  # data 유효한지 확인
+        serializer = self.serializer_class(data=request.data)  # data 유효성 검사
         if serializer.is_valid():
             image = request.data.get('image')
             user = user = serializer.data.get('user')
@@ -34,7 +33,6 @@ class GetInformation(APIView):
                             )
             file_name, file_ext = os.path.splitext(image.name)
             coordinates = []
-            sliced_img_list = {}
             pred_img = []
             # req.save()
 
@@ -74,14 +72,12 @@ class GetInformation(APIView):
                     pass
 
             # Text Recognition
-            # 저장 안하고, 바로 text recognition으로 보내기
             result = [{'name': file_name + file_ext,
                        'coordinates': coordinates, 'result': []}]
             result[0]['result'] = ControllerConfig.tr.predict(
                 file_name, pred_img)
 
             res = Responsed(user=user, result=result)
-            # res = Responsed(user=user, result=json.dumps(result))
 
             return Response(ResponsedSerializer(res).data, status=status.HTTP_200_OK)
         return Response({'Bad Request': 'Invalid Data..'}, status=status.HTTP_400_BAD_REQUEST)
